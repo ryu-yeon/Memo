@@ -36,7 +36,7 @@ class WriteViewController: BaseViewController {
             let task = Memo(title: "안녕하세요", content: nil, registerDate: Date(), isCompose: true)
             localRealm.add(task)
         }
-        dismiss(animated: true)
+        navigationController?.popViewController(animated: true)
     }
     
     @objc func sharedButtonClicked() {
