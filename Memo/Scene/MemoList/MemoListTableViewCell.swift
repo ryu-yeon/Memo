@@ -20,13 +20,13 @@ class MemoListTableViewCell: BaseTableViewCell {
     
     let dateLabel: UILabel = {
         let view = UILabel()
-        view.font = .systemFont(ofSize: 18)
+        view.font = .systemFont(ofSize: 16)
         return view
     }()
     
     let contentLabel: UILabel = {
        let view = UILabel()
-        view.font = .systemFont(ofSize: 18)
+        view.font = .systemFont(ofSize: 16)
         return view
     }()
     
@@ -47,7 +47,6 @@ class MemoListTableViewCell: BaseTableViewCell {
         dateLabel.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(8)
             make.leading.equalTo(20)
-            make.width.equalTo(60)
             make.height.equalTo(20)
         }
         
