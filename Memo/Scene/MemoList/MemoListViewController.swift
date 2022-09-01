@@ -87,11 +87,15 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-            // 고정
+            try! self.localRealm.write {
+                self.tasks[indexPath.row].isCompose.toggle()
+            }
             self.mainView.tableView.reloadData()
         }
         
-        composeButton.image = UIImage(systemName: "pin.fill")
+        let pinImage = self.tasks[indexPath.row].isCompose ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
+        
+        composeButton.image = pinImage
         composeButton.backgroundColor = .systemOrange
         
         return UISwipeActionsConfiguration(actions: [composeButton])
@@ -100,7 +104,9 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let removeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-            // 삭제
+            try! self.localRealm.write {
+                self.localRealm.delete(self.tasks[indexPath.row])
+            }
             self.mainView.tableView.reloadData()
         }
         
