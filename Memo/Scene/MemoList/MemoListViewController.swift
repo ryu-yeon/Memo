@@ -32,24 +32,36 @@ class MemoListViewController: BaseViewController {
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: true)
         mainView.tableView.reloadData()
+        
+        navigationItem.title = "\(tasks.count)개의 메모"
     }
     
     override func configure() {
         
-        navigationItem.title = "메모"
+        setSearchController()
+        
         mainView.tableView.delegate = self
         mainView.tableView.dataSource = self
         mainView.tableView.register(MemoListTableViewCell.self, forCellReuseIdentifier: MemoListTableViewCell.reusableIdentifier)
-
         
         mainView.toolBar.items = [UIBarButtonItem.flexibleSpace(), UIBarButtonItem(image: UIImage(systemName: "square.and.pencil"), style: .plain, target: self, action: #selector(writeButtonClicked))]
         
-        tasks = localRealm.objects(Memo.self)
+        tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
     }
     
     @objc func writeButtonClicked() {
         let vc = WriteViewController()
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func setSearchController() {
+        let searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
+        navigationItem.searchController = searchController
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.hidesSearchBarWhenScrolling = false
+        navigationItem.largeTitleDisplayMode = .always
+        searchController.searchBar.placeholder = "검색"
     }
 }
 
@@ -61,6 +73,8 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
         
+        cell.titleLabel.text = tasks[indexPath.row].title
+        cell.contentLabel.text = tasks[indexPath.row].content
         
         return cell
     }
@@ -98,4 +112,16 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80
     }
+}
+
+extension MemoListViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        if let text = searchController.searchBar.text, text != "" {
+            tasks = localRealm.objects(Memo.self).filter("title CONTAINS[c] '\(text)'")
+        } else {
+            tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
+        }
+        mainView.tableView.reloadData()
+    }
+
 }
