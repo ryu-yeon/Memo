@@ -66,16 +66,35 @@ class MemoListViewController: BaseViewController {
 }
 
 extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tasks.count
+        if section == 0 {
+            let pintasks = self.tasks.filter("isCompose = true")
+            return pintasks.count
+        }
+        else {
+            let memo = self.tasks.filter("isCompose = false")
+            return memo.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
-        
-        cell.titleLabel.text = tasks[indexPath.row].title
-        cell.contentLabel.text = tasks[indexPath.row].content
-        
+        if indexPath.section == 0 {
+            let pintasks = self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)
+            cell.titleLabel.text = pintasks[indexPath.row].title
+            cell.contentLabel.text = pintasks[indexPath.row].content
+        } else if indexPath.section == 1{
+            let memo = self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)
+            cell.titleLabel.text = memo[indexPath.row].title
+            cell.contentLabel.text = memo[indexPath.row].content
+        } else {
+            return UITableViewCell()
+        }
         return cell
     }
     
@@ -86,19 +105,28 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-            try! self.localRealm.write {
-                self.tasks[indexPath.row].isCompose.toggle()
+        if indexPath.section == 0 {
+            let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
+                try! self.localRealm.write {
+                    self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = false
+                }
+                self.mainView.tableView.reloadData()
             }
-            self.mainView.tableView.reloadData()
+            composeButton.image = UIImage(systemName: "pin.fill")
+            composeButton.backgroundColor = .systemOrange
+            return UISwipeActionsConfiguration(actions: [composeButton])
+            
+        } else {
+            let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
+                try! self.localRealm.write {
+                    self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = true
+                }
+                    self.mainView.tableView.reloadData()
+            }
+            composeButton.image = UIImage(systemName: "pin.slash.fill")
+            composeButton.backgroundColor = .systemOrange
+            return UISwipeActionsConfiguration(actions: [composeButton])
         }
-        
-        let pinImage = self.tasks[indexPath.row].isCompose ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
-        
-        composeButton.image = pinImage
-        composeButton.backgroundColor = .systemOrange
-        
-        return UISwipeActionsConfiguration(actions: [composeButton])
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {

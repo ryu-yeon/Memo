@@ -11,7 +11,7 @@ import SnapKit
 
 class MemoListView: BaseView {
     let tableView: UITableView = {
-        let view = UITableView()
+        let view = UITableView(frame: .zero, style: .insetGrouped)
         view.backgroundColor = .lightGray
         return view
     }()
