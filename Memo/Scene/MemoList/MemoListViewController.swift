@@ -8,6 +8,7 @@
 import UIKit
 
 import RealmSwift
+import Toast
 
 class MemoListViewController: BaseViewController {
     
@@ -134,10 +135,14 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             
         } else {
             let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-                try! self.localRealm.write {
-                    self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = true
-                }
+                if self.tasks.filter("isCompose = true").count < 5 {
+                    try! self.localRealm.write {
+                        self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = true
+                    }
                     self.mainView.tableView.reloadData()
+                } else {
+                    self.view.makeToast("최대 5개까지 메모를 고정할 수 있습니다.", duration: 2.0, position: .center, style: ToastStyle())
+                }
             }
             composeButton.image = UIImage(systemName: "pin.slash.fill")
             composeButton.backgroundColor = .systemOrange
