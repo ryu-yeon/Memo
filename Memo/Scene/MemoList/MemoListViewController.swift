@@ -18,6 +18,8 @@ class MemoListViewController: BaseViewController {
     
     let localRealm = try! Realm()
     
+    let numberFormat = NumberFormatter()
+    
     override func loadView() {
         self.view = mainView
     }
@@ -36,7 +38,9 @@ class MemoListViewController: BaseViewController {
         
         mainView.tableView.reloadData()
         
-        navigationItem.title = "\(tasks.count)개의 메모"
+        numberFormat.numberStyle = .decimal
+        let memoCount = numberFormat.string(for: tasks.count)
+        navigationItem.title = (memoCount ?? "0") + "개의 메모"
     }
     
     override func configure() {
