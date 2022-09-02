@@ -12,7 +12,6 @@ import SnapKit
 class MemoListView: BaseView {
     let tableView: UITableView = {
         let view = UITableView(frame: .zero, style: .insetGrouped)
-        view.backgroundColor = .lightGray
         return view
     }()
     
@@ -32,8 +31,7 @@ class MemoListView: BaseView {
     override func setConstraints() {
         tableView.snp.makeConstraints { make in
             make.top.equalTo(self.safeAreaLayoutGuide).offset(20)
-            make.leading.equalTo(20)
-            make.trailing.equalTo(-20)
+            make.leading.trailing.equalTo(self)
             make.bottom.equalTo(toolBar.snp.top)
         }
         

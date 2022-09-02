@@ -146,6 +146,25 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80
     }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        let view = UIView()
+        let label = UILabel()
+        label.frame = CGRect(x: 0, y: 0, width: 300, height: 30)
+        if section == 0 {
+            label.text = "고정된 메모"
+        } else {
+            label.text = "메모"
+        }
+        label.font = .boldSystemFont(ofSize: 28)
+        view.addSubview(label)
+        return view
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 40
+    }
 }
 
 extension MemoListViewController: UISearchResultsUpdating {
