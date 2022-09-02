@@ -29,9 +29,9 @@ class MemoListViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        let vc = PopUpViewController()
-        vc.modalPresentationStyle = .overFullScreen
-        present(vc, animated: true)
+//        let vc = PopUpViewController()
+//        vc.modalPresentationStyle = .overFullScreen
+//        present(vc, animated: true)
         
         mainView.tableView.reloadData()
         
@@ -179,7 +179,13 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 40
+        if section == 0 && self.tasks.filter("isCompose = true").count == 0 {
+            return 0
+        } else if section == 1 && self.tasks.filter("isCompose = false").count == 0 {
+            return 0
+        } else {
+            return 40
+        }
     }
 }
 
