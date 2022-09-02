@@ -157,10 +157,22 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let removeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-            try! self.localRealm.write {
-                self.localRealm.delete(self.tasks[indexPath.row])
+            
+            let alert = UIAlertController(title: "삭제", message: "메모를 정말 삭제하시겠습니까?", preferredStyle: .alert)
+            
+            let ok = UIAlertAction(title: "확인", style: .destructive) { alert in
+                try! self.localRealm.write {
+                    self.localRealm.delete(self.tasks[indexPath.row])
+                }
+                self.mainView.tableView.reloadData()
             }
-            self.mainView.tableView.reloadData()
+            
+            let cancel = UIAlertAction(title: "취소", style: .default)
+            
+            [ok, cancel].forEach {
+                alert.addAction($0)
+            }
+            self.present(alert, animated: true)
         }
         
         removeButton.image = UIImage(systemName: "trash.fill")
