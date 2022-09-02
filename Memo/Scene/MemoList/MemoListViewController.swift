@@ -28,9 +28,11 @@ class MemoListViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
         let vc = PopUpViewController()
         vc.modalPresentationStyle = .overFullScreen
         present(vc, animated: true)
+        
         mainView.tableView.reloadData()
         
         navigationItem.title = "\(tasks.count)개의 메모"
@@ -44,9 +46,21 @@ class MemoListViewController: BaseViewController {
         mainView.tableView.dataSource = self
         mainView.tableView.register(MemoListTableViewCell.self, forCellReuseIdentifier: MemoListTableViewCell.reusableIdentifier)
         
-        mainView.toolBar.items = [UIBarButtonItem.flexibleSpace(), UIBarButtonItem(image: UIImage(systemName: "square.and.pencil"), style: .plain, target: self, action: #selector(writeButtonClicked))]
+        let view = UIView()
+        view.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
+        let writeButton = UIButton()
+        writeButton.frame = CGRect(x: 40, y: 10, width: 40, height: 40)
+        writeButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+        writeButton.contentVerticalAlignment = .fill
+        writeButton.contentHorizontalAlignment = .fill
+        
+        view.addSubview(writeButton)
+        writeButton.addTarget(self, action: #selector(writeButtonClicked), for: .touchUpInside)
+        
+        mainView.toolBar.items = [UIBarButtonItem.flexibleSpace(),  UIBarButtonItem(customView: view)]
         
         tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
+        
     }
     
     @objc func writeButtonClicked() {
@@ -59,6 +73,8 @@ class MemoListViewController: BaseViewController {
         searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
         navigationController?.navigationBar.prefersLargeTitles = true
+        navigationController?.navigationBar.backgroundColor = .systemGray6
+        
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .always
         searchController.searchBar.placeholder = "검색"

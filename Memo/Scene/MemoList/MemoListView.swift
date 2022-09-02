@@ -12,17 +12,18 @@ import SnapKit
 class MemoListView: BaseView {
     let tableView: UITableView = {
         let view = UITableView(frame: .zero, style: .insetGrouped)
+        view.backgroundColor = .systemGray6
         return view
     }()
     
     let toolBar: UIToolbar = {
         let view = UIToolbar()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemGray6
         return view
     }()
     
     override func configureUI() {
-        self.backgroundColor = .white
+        self.backgroundColor = .systemGray6
         [tableView, toolBar].forEach {
             self.addSubview($0)
         }
@@ -38,8 +39,8 @@ class MemoListView: BaseView {
         toolBar.snp.makeConstraints { make in
             make.top.equalTo(tableView.snp.bottom)
             make.leading.trailing.equalTo(self)
-            make.bottom.equalTo(-40)
-            make.height.equalTo(40)
+            make.bottom.equalTo(self)
+            make.height.equalTo(80)
         }
     }
 }
