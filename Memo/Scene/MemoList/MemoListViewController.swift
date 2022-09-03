@@ -20,6 +20,8 @@ class MemoListViewController: BaseViewController {
     
     let numberFormat = NumberFormatter()
     
+    let dateFormat = DateFormatter()
+    
     override func loadView() {
         self.view = mainView
     }
@@ -109,10 +111,32 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             let pintasks = self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)
             cell.titleLabel.text = pintasks[indexPath.row].title
             cell.contentLabel.text = pintasks[indexPath.row].content
+            if Calendar.current.isDateInToday(pintasks[indexPath.row].registerDate) {
+                dateFormat.dateFormat = "a hh:mm"
+                
+            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= pintasks[indexPath.row].registerDate {
+                dateFormat.dateFormat = "EEEE"
+            } else {
+                dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
+            }
+            cell.dateLabel.text = dateFormat.string(from: pintasks[indexPath.row].registerDate)
+            
         } else if indexPath.section == 1{
             let memo = self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)
             cell.titleLabel.text = memo[indexPath.row].title
             cell.contentLabel.text = memo[indexPath.row].content
+            
+            if Calendar.current.isDateInToday(memo[indexPath.row].registerDate) {
+                dateFormat.dateFormat = "a hh:mm"
+                
+            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= memo[indexPath.row].registerDate {
+
+                dateFormat.dateFormat = "EEEE"
+            } else {
+                dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
+            }
+            cell.dateLabel.text = dateFormat.string(from: memo[indexPath.row].registerDate)
+                    
         } else {
             return UITableViewCell()
         }
