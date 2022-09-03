@@ -11,24 +11,37 @@ import SnapKit
 
 class WriteView: BaseView {
     
+    let viewContainer: UIView = {
+        let view = UIView()
+        view.backgroundColor = .white
+        return view
+    }()
+    
     let userTextView: UITextView = {
         let view = UITextView()
         view.font = .systemFont(ofSize: 20)
+        view.backgroundColor = .white
         return view
     }()
     
     override func configureUI() {
-        self.backgroundColor = .white
-        [userTextView].forEach {
+        self.backgroundColor = .systemGray6
+        [viewContainer, userTextView].forEach {
             self.addSubview($0)
         }
     }
     
     override func setConstraints() {
-        userTextView.snp.makeConstraints { make in
+        viewContainer.snp.makeConstraints { make in
             make.top.equalTo(self.safeAreaLayoutGuide)
-            make.leading.equalTo(20)
-            make.trailing.bottom.equalTo(-20)
+            make.leading.trailing.bottom.equalTo(self)
+        }
+        
+        userTextView.snp.makeConstraints { make in
+            make.top.equalTo(viewContainer.snp.top).offset(20)
+            make.leading.equalTo(viewContainer.snp.leading).inset(20)
+            make.trailing.equalTo(viewContainer.snp.trailing).inset(20)
+            make.bottom.equalTo(viewContainer.snp.bottom)
         }
     }
 }
