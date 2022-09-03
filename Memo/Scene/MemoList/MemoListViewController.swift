@@ -109,8 +109,9 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
         if indexPath.section == 0 {
             let pintasks = self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)
+            
             cell.titleLabel.text = pintasks[indexPath.row].title
-            cell.contentLabel.text = pintasks[indexPath.row].content
+            cell.contentLabel.text = pintasks[indexPath.row].content ?? "추가 텍스트 없음"
             if Calendar.current.isDateInToday(pintasks[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
                 
@@ -124,7 +125,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         } else if indexPath.section == 1{
             let memo = self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)
             cell.titleLabel.text = memo[indexPath.row].title
-            cell.contentLabel.text = memo[indexPath.row].content
+            cell.contentLabel.text = memo[indexPath.row].content ?? "추가 텍스트 없음"
             
             if Calendar.current.isDateInToday(memo[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
@@ -145,6 +146,13 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let vc = WriteViewController()
+        
+        if indexPath.section == 0 {
+            vc.task = tasks.filter("isCompose = true")[indexPath.row]
+        } else {
+            vc.task = tasks.filter("isCompose = false")[indexPath.row]
+        }
+        
         navigationController?.pushViewController(vc, animated: true)
     }
     
