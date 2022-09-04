@@ -126,7 +126,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             if Calendar.current.isDateInToday(pintasks[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
                 
-            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= pintasks[indexPath.row].registerDate {
+            } else if NSCalendar.current.component(.weekOfYear, from: pintasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
                 dateFormat.dateFormat = "EEEE"
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
@@ -141,8 +141,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             if Calendar.current.isDateInToday(memo[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
                 
-            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= memo[indexPath.row].registerDate {
-
+            } else if NSCalendar.current.component(.weekOfYear, from: memo[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
                 dateFormat.dateFormat = "EEEE"
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
@@ -175,10 +174,12 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             
             if Calendar.current.isDateInToday(searchTasks?[indexPath.row].registerDate ?? Date()) {
                 dateFormat.dateFormat = "a hh:mm"
+            } else if NSCalendar.current.component(.weekOfYear, from: searchTasks?[indexPath.row].registerDate ?? Date()) == NSCalendar.current.component(.weekOfYear, from: Date()) {
+                        dateFormat.dateFormat = "EEEE"
                 
-            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= searchTasks?[indexPath.row].registerDate ?? Date() {
-
-                dateFormat.dateFormat = "EEEE"
+//            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= searchTasks?[indexPath.row].registerDate ?? Date() {
+//
+//                dateFormat.dateFormat = "EEEE"
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
             }
