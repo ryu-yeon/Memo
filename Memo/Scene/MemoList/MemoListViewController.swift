@@ -32,16 +32,18 @@ class MemoListViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-//        print("Realm is located at:", localRealm.configuration.fileURL!)
+        
+        if !UserDefaults.standard.bool(forKey: "start") {
+            UserDefaults.standard.set(true, forKey: "start")
+            let vc = PopUpViewController()
+            vc.modalPresentationStyle = .overFullScreen
+            present(vc, animated: true)
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-
-//        let vc = PopUpViewController()
-//        vc.modalPresentationStyle = .overFullScreen
-//        present(vc, animated: true)
-        
+    
         mainView.tableView.reloadData()
         navigationController?.navigationBar.prefersLargeTitles = true
         

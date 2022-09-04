@@ -42,6 +42,7 @@ class PopUpView: BaseView {
     }()
     
     override func configureUI() {
+        self.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.4)
         [viewContainer, welcomeLabel, okButton].forEach {
             self.addSubview($0)
         }
