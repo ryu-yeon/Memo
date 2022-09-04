@@ -72,6 +72,10 @@ class WriteViewController: BaseViewController {
     
     @objc func sharedButtonClicked() {
         
+        guard let sharedText = mainView.userTextView.text else { return }
+        
+        let vc = UIActivityViewController(activityItems: [sharedText], applicationActivities: [])
+        present(vc, animated: true)
     }
     
     func updateMemo() {
