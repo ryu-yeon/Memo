@@ -43,6 +43,7 @@ class MemoListViewController: BaseViewController {
 //        present(vc, animated: true)
         
         mainView.tableView.reloadData()
+        navigationController?.navigationBar.prefersLargeTitles = true
         
         numberFormat.numberStyle = .decimal
         let memoCount = numberFormat.string(for: tasks.count)
@@ -83,7 +84,6 @@ class MemoListViewController: BaseViewController {
         let searchController = UISearchController(searchResultsController: nil)
         searchController.searchResultsUpdater = self
         navigationItem.searchController = searchController
-        navigationController?.navigationBar.prefersLargeTitles = true
         navigationController?.navigationBar.backgroundColor = .systemGray6
         
         navigationItem.hidesSearchBarWhenScrolling = false

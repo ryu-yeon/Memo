@@ -31,6 +31,7 @@ class WriteViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.navigationBar.prefersLargeTitles = false
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -44,7 +45,7 @@ class WriteViewController: BaseViewController {
                     localRealm.add(task)
                 }
             } else {
-                try! localRealm.write{
+                try! localRealm.write {
                     task?.title = titleText
                     task?.content = contentText
                     task?.registerDate = Date()
@@ -64,7 +65,6 @@ class WriteViewController: BaseViewController {
         let sharedButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(sharedButtonClicked))
         let saveButton = UIBarButtonItem(title: "완료", style: .plain, target: self, action: #selector(saveButtonClicked))
         navigationItem.rightBarButtonItems = [saveButton, sharedButton]
-        navigationController?.navigationBar.prefersLargeTitles = false
     }
     
     @objc func saveButtonClicked() {
