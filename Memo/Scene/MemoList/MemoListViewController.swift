@@ -227,6 +227,30 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             composeButton.image = UIImage(systemName: "pin.slash.fill")
             composeButton.backgroundColor = .systemOrange
             return UISwipeActionsConfiguration(actions: [composeButton])
+            
+        } else if indexPath.section == 2 {
+            
+            let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
+                if self.searchTasks?[indexPath.row].isCompose == true {
+                    try! self.localRealm.write {
+                        self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = false
+                    }
+                    self.mainView.tableView.reloadData()
+                } else {
+                    if self.tasks.filter("isCompose = true").count < 5 {
+                        try! self.localRealm.write {
+                            self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = true
+                        }
+                        self.mainView.tableView.reloadData()
+                    } else {
+                        self.view.makeToast("최대 5개까지 메모를 고정할 수 있습니다.", duration: 2.0, position: .center, style: ToastStyle())
+                    }
+                }
+            }
+            
+            composeButton.image = self.searchTasks?[indexPath.row].isCompose == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
+            composeButton.backgroundColor = .systemOrange
+            return UISwipeActionsConfiguration(actions: [composeButton])
         }
         return UISwipeActionsConfiguration(actions: [])
     }
@@ -298,7 +322,7 @@ extension MemoListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         if let text = searchController.searchBar.text, text != "" {
             searchText = text
-            searchTasks = localRealm.objects(Memo.self).filter("title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'")
+            searchTasks = localRealm.objects(Memo.self).filter("title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'").sorted(byKeyPath: "registerDate", ascending: true)
         } else {
             searchTasks = nil
         }
