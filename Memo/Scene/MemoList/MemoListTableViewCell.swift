@@ -55,8 +55,8 @@ class MemoListTableViewCell: BaseTableViewCell {
         
         contentLabel.snp.makeConstraints { make in
             make.top.equalTo(dateLabel.snp.top)
-            make.leading.equalTo(dateLabel.snp.trailing)
-            make.trailing.equalTo(-20)
+            make.leading.equalTo(dateLabel.snp.trailing).offset(8)
+            make.trailing.lessThanOrEqualTo(self).offset(-20)
             make.bottom.equalTo(dateLabel.snp.bottom)
         }
     }
