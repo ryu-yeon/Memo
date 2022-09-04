@@ -155,25 +155,19 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             
             if let text = cell.titleLabel.text  {
                 
-                // myLabel의 text로 NSMutableAttributedString 인스턴스를 만들어줍니다.
                 let attributeString = NSMutableAttributedString(string: text)
                 
-                // Pingu에만 방금 만든 폰트를 적용합니다.
                 attributeString.addAttribute(.foregroundColor, value: UIColor.blue, range: (text as NSString).range(of: searchText ?? ""))
                 
-                // myLabel에 방금 만든 속성을 적용합니다.
                 cell.titleLabel.attributedText = attributeString
             }
             
             if let text = cell.contentLabel.text  {
                 
-                // myLabel의 text로 NSMutableAttributedString 인스턴스를 만들어줍니다.
                 let attributeString = NSMutableAttributedString(string: text)
                 
-                // Pingu에만 방금 만든 폰트를 적용합니다.
                 attributeString.addAttribute(.foregroundColor, value: UIColor.blue, range: (text as NSString).range(of: searchText ?? ""))
                 
-                // myLabel에 방금 만든 속성을 적용합니다.
                 cell.contentLabel.attributedText = attributeString
             }
             
