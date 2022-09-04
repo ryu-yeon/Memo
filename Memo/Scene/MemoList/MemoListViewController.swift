@@ -22,6 +22,10 @@ class MemoListViewController: BaseViewController {
     
     let dateFormat = DateFormatter()
     
+    var searchTasks: Results<Memo>?
+    
+    var searchText: String?
+    
     override func loadView() {
         self.view = mainView
     }
@@ -84,6 +88,7 @@ class MemoListViewController: BaseViewController {
         
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .always
+        navigationItem.backButtonTitle = "메모"
         searchController.searchBar.placeholder = "검색"
     }
 }
@@ -91,17 +96,21 @@ class MemoListViewController: BaseViewController {
 extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 3
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if section == 0 {
+        if section == 0 && searchTasks == nil {
             let pintasks = self.tasks.filter("isCompose = true")
             return pintasks.count
         }
-        else {
+        else if section == 1 && searchTasks == nil {
             let memo = self.tasks.filter("isCompose = false")
             return memo.count
+        } else if section == 2 {
+            return searchTasks?.count ?? 0
+        } else {
+            return 0
         }
     }
     
@@ -122,7 +131,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             }
             cell.dateLabel.text = dateFormat.string(from: pintasks[indexPath.row].registerDate)
             
-        } else if indexPath.section == 1{
+        } else if indexPath.section == 1 {
             let memo = self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)
             cell.titleLabel.text = memo[indexPath.row].title
             cell.contentLabel.text = memo[indexPath.row].content ?? "추가 텍스트 없음"
@@ -139,7 +148,33 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             cell.dateLabel.text = dateFormat.string(from: memo[indexPath.row].registerDate)
                     
         } else {
-            return UITableViewCell()
+            
+            
+            cell.titleLabel.text = searchTasks?[indexPath.row].title ?? ""
+            cell.contentLabel.text = searchTasks?[indexPath.row].content ?? "추가 텍스트 없음"
+            
+            if let text = cell.titleLabel.text  {
+                
+                // myLabel의 text로 NSMutableAttributedString 인스턴스를 만들어줍니다.
+                let attributeString = NSMutableAttributedString(string: text)
+                
+                // Pingu에만 방금 만든 폰트를 적용합니다.
+                attributeString.addAttribute(.foregroundColor, value: UIColor.blue, range: (text as NSString).range(of: searchText ?? ""))
+                
+                // myLabel에 방금 만든 속성을 적용합니다.
+                cell.titleLabel.attributedText = attributeString
+            }
+            
+            if Calendar.current.isDateInToday(searchTasks?[indexPath.row].registerDate ?? Date()) {
+                dateFormat.dateFormat = "a hh:mm"
+                
+            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= searchTasks?[indexPath.row].registerDate ?? Date() {
+
+                dateFormat.dateFormat = "EEEE"
+            } else {
+                dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
+            }
+            cell.dateLabel.text = dateFormat.string(from: searchTasks?[indexPath.row].registerDate ?? Date())
         }
         return cell
     }
@@ -149,8 +184,11 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         
         if indexPath.section == 0 {
             vc.task = tasks.filter("isCompose = true")[indexPath.row]
-        } else {
+        } else if indexPath.section == 1 {
             vc.task = tasks.filter("isCompose = false")[indexPath.row]
+        } else if indexPath.section == 2 {
+            navigationItem.backButtonTitle = "검색"
+            vc.task = searchTasks?[indexPath.row]
         }
         
         navigationController?.pushViewController(vc, animated: true)
@@ -169,7 +207,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             composeButton.backgroundColor = .systemOrange
             return UISwipeActionsConfiguration(actions: [composeButton])
             
-        } else {
+        } else if indexPath.section == 1 {
             let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
                 if self.tasks.filter("isCompose = true").count < 5 {
                     try! self.localRealm.write {
@@ -184,6 +222,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             composeButton.backgroundColor = .systemOrange
             return UISwipeActionsConfiguration(actions: [composeButton])
         }
+        return UISwipeActionsConfiguration(actions: [])
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -223,8 +262,10 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         label.frame = CGRect(x: 0, y: 0, width: 300, height: 30)
         if section == 0 {
             label.text = "고정된 메모"
-        } else {
+        } else if section == 1{
             label.text = "메모"
+        } else {
+            label.text = "\(searchTasks?.count ?? 0)개 찾음"
         }
         label.font = .boldSystemFont(ofSize: 28)
         view.addSubview(label)
@@ -232,22 +273,28 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        if section == 0 && self.tasks.filter("isCompose = true").count == 0 {
+        if section == 0 {
+            if searchTasks != nil || self.tasks.filter("isCompose = true").count == 0 {
+                return 0
+            }
+        } else if section == 1 {
+            if searchTasks != nil || self.tasks.filter("isCompose = false").count == 0 {
+                return 0
+            }
+        } else if section == 2 && searchTasks == nil {
             return 0
-        } else if section == 1 && self.tasks.filter("isCompose = false").count == 0 {
-            return 0
-        } else {
-            return 40
         }
+        return 40
     }
 }
 
 extension MemoListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         if let text = searchController.searchBar.text, text != "" {
-            tasks = localRealm.objects(Memo.self).filter("title CONTAINS[c] '\(text)'")
+            searchText = text
+            searchTasks = localRealm.objects(Memo.self).filter("title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'")
         } else {
-            tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
+            searchTasks = nil
         }
         mainView.tableView.reloadData()
     }
