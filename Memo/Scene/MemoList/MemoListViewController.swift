@@ -75,6 +75,16 @@ class MemoListViewController: BaseViewController {
         
         tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
         
+        
+        let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = .systemGray6
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
+        
+        navigationController?.navigationBar.tintColor = .systemOrange
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
     }
     
     @objc func writeButtonClicked() {
@@ -158,7 +168,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
                 
                 let attributeString = NSMutableAttributedString(string: text)
                 
-                attributeString.addAttribute(.foregroundColor, value: UIColor.blue, range: (text as NSString).range(of: searchText ?? ""))
+                attributeString.addAttribute(.foregroundColor, value: UIColor.systemOrange, range: (text as NSString).range(of: searchText ?? ""))
                 
                 cell.titleLabel.attributedText = attributeString
             }
@@ -167,7 +177,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
                 
                 let attributeString = NSMutableAttributedString(string: text)
                 
-                attributeString.addAttribute(.foregroundColor, value: UIColor.blue, range: (text as NSString).range(of: searchText ?? ""))
+                attributeString.addAttribute(.foregroundColor, value: UIColor.systemOrange, range: (text as NSString).range(of: searchText ?? ""))
                 
                 cell.contentLabel.attributedText = attributeString
             }
@@ -292,6 +302,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         
         let view = UIView()
         let label = UILabel()
+        label.textColor = .label
         label.frame = CGRect(x: 0, y: 0, width: 300, height: 30)
         if section == 0 {
             label.text = "고정된 메모"

@@ -28,14 +28,14 @@ class PopUpView: BaseView {
         """
         view.text = ment
         view.numberOfLines = 5
-        view.textColor = .black
+        view.textColor = .label
         view.font = .boldSystemFont(ofSize: 20)
         return view
     }()
     
     let okButton: UIButton = {
         let view = UIButton()
-        view.setTitleColor(.black, for: .normal)
+        view.setTitleColor(.label, for: .normal)
         view.setAttributedTitle(NSAttributedString(string: "확인", attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 20)]), for: .normal)
         view.backgroundColor = .systemOrange
         return view
