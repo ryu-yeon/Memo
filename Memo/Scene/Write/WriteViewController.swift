@@ -64,6 +64,7 @@ class WriteViewController: BaseViewController {
         let sharedButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(sharedButtonClicked))
         let saveButton = UIBarButtonItem(title: "완료", style: .plain, target: self, action: #selector(saveButtonClicked))
         navigationItem.rightBarButtonItems = [saveButton, sharedButton]
+        navigationController?.navigationBar.prefersLargeTitles = false
     }
     
     @objc func saveButtonClicked() {
