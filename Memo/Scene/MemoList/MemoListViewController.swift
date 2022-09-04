@@ -39,6 +39,8 @@ class MemoListViewController: BaseViewController {
             vc.modalPresentationStyle = .overFullScreen
             present(vc, animated: true)
         }
+        
+        setToolbarButton()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -52,6 +54,7 @@ class MemoListViewController: BaseViewController {
         navigationItem.title = (memoCount ?? "0") + "개의 메모"
     }
     
+    
     override func configure() {
         
         setSearchController()
@@ -60,21 +63,7 @@ class MemoListViewController: BaseViewController {
         mainView.tableView.dataSource = self
         mainView.tableView.register(MemoListTableViewCell.self, forCellReuseIdentifier: MemoListTableViewCell.reusableIdentifier)
         
-        let view = UIView()
-        view.frame = CGRect(x: 0, y: 0, width: 80, height: 80)
-        let writeButton = UIButton()
-        writeButton.frame = CGRect(x: 40, y: 10, width: 40, height: 40)
-        writeButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
-        writeButton.contentVerticalAlignment = .fill
-        writeButton.contentHorizontalAlignment = .fill
-        
-        view.addSubview(writeButton)
-        writeButton.addTarget(self, action: #selector(writeButtonClicked), for: .touchUpInside)
-        
-        mainView.toolBar.items = [UIBarButtonItem.flexibleSpace(),  UIBarButtonItem(customView: view)]
-        
         tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
-        
         
         let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .systemGray6
@@ -85,6 +74,35 @@ class MemoListViewController: BaseViewController {
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
+    
+    func setToolbarButton() {
+
+        if #available(iOS 14.0, *) {
+            let view = UIView()
+            view.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+            let writeButton = UIButton()
+            writeButton.frame = CGRect(x: 0, y: -5, width: 30, height: 30)
+            writeButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+            writeButton.contentVerticalAlignment = .fill
+            writeButton.contentHorizontalAlignment = .fill
+            
+            view.addSubview(writeButton)
+            writeButton.addTarget(self, action: #selector(writeButtonClicked), for: .touchUpInside)
+            mainView.toolBar.items = [UIBarButtonItem.flexibleSpace(),  UIBarButtonItem(customView: view)]
+        } else {
+            let view = UIView()
+            view.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 30)
+            let writeButton = UIButton()
+            writeButton.frame = CGRect(x: UIScreen.main.bounds.width - 60, y: -5, width: 30, height: 30)
+            writeButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+            writeButton.contentVerticalAlignment = .fill
+            writeButton.contentHorizontalAlignment = .fill
+            
+            view.addSubview(writeButton)
+            writeButton.addTarget(self, action: #selector(writeButtonClicked), for: .touchUpInside)
+            mainView.toolBar.items = [UIBarButtonItem(customView: view)]
+        }
     }
     
     @objc func writeButtonClicked() {

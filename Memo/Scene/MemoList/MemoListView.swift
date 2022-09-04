@@ -41,7 +41,7 @@ class MemoListView: BaseView {
             make.top.equalTo(tableView.snp.bottom)
             make.leading.trailing.equalTo(self)
             make.bottom.equalTo(self)
-            make.height.equalTo(80)
+            make.height.equalTo(self).multipliedBy(0.08)
         }
     }
 }
