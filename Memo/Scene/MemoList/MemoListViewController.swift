@@ -22,7 +22,11 @@ class MemoListViewController: BaseViewController {
         return format
     }()
     
-    let dateFormat = DateFormatter()
+    let dateFormat: DateFormatter = {
+        let format = DateFormatter()
+        format.locale = Locale(identifier: "ko_KR")
+        return format
+    }()
     
     var searchTasks: Results<Memo>?
     
@@ -38,7 +42,7 @@ class MemoListViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         if !UserDefaults.standard.bool(forKey: "start") {
             UserDefaults.standard.set(true, forKey: "start")
             let vc = PopUpViewController()
@@ -59,16 +63,22 @@ class MemoListViewController: BaseViewController {
         setTitle()
     }
     
-    
     override func configure() {
         
         setSearchController()
+        setNavigtaionBar()
         
         mainView.tableView.delegate = self
         mainView.tableView.dataSource = self
         mainView.tableView.register(MemoListTableViewCell.self, forCellReuseIdentifier: MemoListTableViewCell.reusableIdentifier)
-        
-        
+    }
+    
+    @objc func writeButtonClicked() {
+        let vc = WriteViewController()
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    func setNavigtaionBar() {
         let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .systemGray6
         appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
@@ -83,6 +93,18 @@ class MemoListViewController: BaseViewController {
     func setTitle() {
         let memoCount = numberFormat.string(for: (fixedTasks?.count ?? 0) + (normalTasks?.count ?? 0))
         navigationItem.title = (memoCount ?? "0") + "개의 메모"
+    }
+    
+    func setDateFormat(date: Date) -> String {
+        if Calendar.current.isDateInToday(date) {
+            dateFormat.dateFormat = "a hh:mm"
+            
+        } else if NSCalendar.current.component(.weekOfYear, from: date) == NSCalendar.current.component(.weekOfYear, from: Date()) {
+            dateFormat.dateFormat = "EEEE"
+        } else {
+            dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
+        }
+        return dateFormat.string(from: date)
     }
     
     func setToolbarButton() {
@@ -114,28 +136,32 @@ class MemoListViewController: BaseViewController {
         }
     }
     
-    @objc func writeButtonClicked() {
-        let vc = WriteViewController()
-        navigationController?.pushViewController(vc, animated: true)
-    }
-    
     func setSearchController() {
         let searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        navigationItem.searchController = searchController
-        navigationController?.navigationBar.backgroundColor = .systemGray6
         
+        navigationController?.navigationBar.backgroundColor = .systemGray6
+        navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .always
         navigationItem.backButtonTitle = "메모"
+        
+        searchController.searchResultsUpdater = self
         searchController.searchBar.placeholder = "검색"
         searchController.searchBar.setValue("취소", forKey: "cancelButtonText")
-
     }
     
     func updateTasks() {
         fixedTasks = repository.fetchFiterSort(text: "isCompose = true", sort: "registerDate")
         normalTasks = repository.fetchFiterSort(text: "isCompose = false", sort: "registerDate")
+    }
+    
+    func highlightText(text: String, searchText: String) ->  NSMutableAttributedString {
+        
+        let attributeString = NSMutableAttributedString(string: text)
+        
+        attributeString.addAttribute(.foregroundColor, value: UIColor.systemOrange, range: (text as NSString).range(of: searchText))
+        
+        return attributeString
     }
 }
 
@@ -160,23 +186,13 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
         
-        dateFormat.locale = Locale(identifier: "ko_KR")
-        
         if indexPath.section == 0 {
             
             guard let fixedTasks = fixedTasks else { return UITableViewCell() }
             
             cell.titleLabel.text = fixedTasks[indexPath.row].title
             cell.contentLabel.text = fixedTasks[indexPath.row].content ?? "추가 텍스트 없음"
-            if Calendar.current.isDateInToday(fixedTasks[indexPath.row].registerDate) {
-                dateFormat.dateFormat = "a hh:mm"
-                
-            } else if NSCalendar.current.component(.weekOfYear, from: fixedTasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
-                dateFormat.dateFormat = "EEEE"
-            } else {
-                dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
-            }
-            cell.dateLabel.text = dateFormat.string(from: fixedTasks[indexPath.row].registerDate)
+            cell.dateLabel.text = setDateFormat(date: fixedTasks[indexPath.row].registerDate)
             
         } else if indexPath.section == 1 {
             
@@ -185,50 +201,20 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             cell.titleLabel.text = normalTasks[indexPath.row].title
             cell.contentLabel.text = normalTasks[indexPath.row].content ?? "추가 텍스트 없음"
             
-            if Calendar.current.isDateInToday(normalTasks[indexPath.row].registerDate) {
-                dateFormat.dateFormat = "a hh:mm"
-                
-            } else if NSCalendar.current.component(.weekOfYear, from: normalTasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
-                dateFormat.dateFormat = "EEEE"
-            } else {
-                dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
-            }
-            cell.dateLabel.text = dateFormat.string(from: normalTasks[indexPath.row].registerDate)
+            cell.dateLabel.text = setDateFormat(date: normalTasks[indexPath.row].registerDate)
                     
         } else {
             
             guard let searchTasks = searchTasks else { return UITableViewCell() }
             
-            cell.titleLabel.text = searchTasks[indexPath.row].title
-            cell.contentLabel.text = searchTasks[indexPath.row].content ?? "추가 텍스트 없음"
-            
-            if let text = cell.titleLabel.text  {
-                
-                let attributeString = NSMutableAttributedString(string: text)
-                
-                attributeString.addAttribute(.foregroundColor, value: UIColor.systemOrange, range: (text as NSString).range(of: searchText ?? ""))
-                
-                cell.titleLabel.attributedText = attributeString
-            }
-            
-            if let text = cell.contentLabel.text  {
-                
-                let attributeString = NSMutableAttributedString(string: text)
-                
-                attributeString.addAttribute(.foregroundColor, value: UIColor.systemOrange, range: (text as NSString).range(of: searchText ?? ""))
-                
-                cell.contentLabel.attributedText = attributeString
-            }
-            
-            if Calendar.current.isDateInToday(searchTasks[indexPath.row].registerDate) {
-                dateFormat.dateFormat = "a hh:mm"
-            } else if NSCalendar.current.component(.weekOfYear, from: searchTasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
-                        dateFormat.dateFormat = "EEEE"
-                
+            cell.titleLabel.attributedText = highlightText(text: searchTasks[indexPath.row].title, searchText: searchText ?? "")
+
+            if let content = searchTasks[indexPath.row].content {
+                cell.contentLabel.attributedText = highlightText(text: content, searchText: searchText ?? "")
             } else {
-                dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
+                cell.contentLabel.text = "추가 텍스트 없음"
             }
-            cell.dateLabel.text = dateFormat.string(from: searchTasks[indexPath.row].registerDate)
+            cell.dateLabel.text = setDateFormat(date: searchTasks[indexPath.row].registerDate)
         }
         return cell
     }
