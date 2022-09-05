@@ -62,6 +62,8 @@ class WriteViewController: BaseViewController {
         
         mainView.userTextView.text = (task?.title ?? "") + "\n" + (task?.content ?? "")
         
+        mainView.userTextView.becomeFirstResponder()
+        
         let sharedButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(sharedButtonClicked))
         let saveButton = UIBarButtonItem(title: "완료", style: .plain, target: self, action: #selector(saveButtonClicked))
         navigationItem.rightBarButtonItems = [saveButton, sharedButton]

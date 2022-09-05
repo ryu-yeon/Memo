@@ -120,6 +120,8 @@ class MemoListViewController: BaseViewController {
         navigationItem.largeTitleDisplayMode = .always
         navigationItem.backButtonTitle = "메모"
         searchController.searchBar.placeholder = "검색"
+        searchController.searchBar.setValue("취소", forKey: "cancelButtonText")
+
     }
 }
 
