@@ -43,8 +43,8 @@ class MemoListViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        if !UserDefaults.standard.bool(forKey: "start") {
-            UserDefaults.standard.set(true, forKey: "start")
+        if !UserDefaultHelper.standard.start {
+            UserDefaultHelper.standard.start = true
             let vc = PopUpViewController()
             vc.modalPresentationStyle = .overFullScreen
             present(vc, animated: true)
