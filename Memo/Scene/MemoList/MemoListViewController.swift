@@ -14,15 +14,17 @@ class MemoListViewController: BaseViewController {
     
     let mainView = MemoListView()
     
-    var tasks: Results<Memo>!
-    
-    let localRealm = try! Realm()
+    let repository = MemoRepository()
     
     let numberFormat = NumberFormatter()
     
     let dateFormat = DateFormatter()
     
     var searchTasks: Results<Memo>?
+    
+    var fixedTasks: Results<Memo>?
+    
+    var normalTasks: Results<Memo>?
     
     var searchText: String?
     
@@ -46,11 +48,12 @@ class MemoListViewController: BaseViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     
+        updateTasks()
         mainView.tableView.reloadData()
         navigationController?.navigationBar.prefersLargeTitles = true
         
         numberFormat.numberStyle = .decimal
-        let memoCount = numberFormat.string(for: tasks.count)
+        let memoCount = numberFormat.string(for: (fixedTasks?.count ?? 0) + (normalTasks?.count ?? 0))
         navigationItem.title = (memoCount ?? "0") + "개의 메모"
     }
     
@@ -63,7 +66,6 @@ class MemoListViewController: BaseViewController {
         mainView.tableView.dataSource = self
         mainView.tableView.register(MemoListTableViewCell.self, forCellReuseIdentifier: MemoListTableViewCell.reusableIdentifier)
         
-        tasks = localRealm.objects(Memo.self).sorted(byKeyPath: "registerDate", ascending: true)
         
         let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .systemGray6
@@ -123,6 +125,11 @@ class MemoListViewController: BaseViewController {
         searchController.searchBar.setValue("취소", forKey: "cancelButtonText")
 
     }
+    
+    func updateTasks() {
+        fixedTasks = repository.fetchFiterSort(text: "isCompose = true", sort: "registerDate")
+        normalTasks = repository.fetchFiterSort(text: "isCompose = false", sort: "registerDate")
+    }
 }
 
 extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
@@ -133,12 +140,9 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if section == 0 && searchTasks == nil {
-            let pintasks = self.tasks.filter("isCompose = true")
-            return pintasks.count
-        }
-        else if section == 1 && searchTasks == nil {
-            let memo = self.tasks.filter("isCompose = false")
-            return memo.count
+            return fixedTasks?.count ?? 0
+        } else if section == 1 && searchTasks == nil {
+            return normalTasks?.count ?? 0
         } else if section == 2 {
             return searchTasks?.count ?? 0
         } else {
@@ -150,41 +154,46 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
         
         dateFormat.locale = Locale(identifier: "ko_KR")
+        
         if indexPath.section == 0 {
-            let pintasks = self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)
             
-            cell.titleLabel.text = pintasks[indexPath.row].title
-            cell.contentLabel.text = pintasks[indexPath.row].content ?? "추가 텍스트 없음"
-            if Calendar.current.isDateInToday(pintasks[indexPath.row].registerDate) {
+            guard let fixedTasks = fixedTasks else { return UITableViewCell() }
+            
+            cell.titleLabel.text = fixedTasks[indexPath.row].title
+            cell.contentLabel.text = fixedTasks[indexPath.row].content ?? "추가 텍스트 없음"
+            if Calendar.current.isDateInToday(fixedTasks[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
                 
-            } else if NSCalendar.current.component(.weekOfYear, from: pintasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
+            } else if NSCalendar.current.component(.weekOfYear, from: fixedTasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
                 dateFormat.dateFormat = "EEEE"
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
             }
-            cell.dateLabel.text = dateFormat.string(from: pintasks[indexPath.row].registerDate)
+            cell.dateLabel.text = dateFormat.string(from: fixedTasks[indexPath.row].registerDate)
             
         } else if indexPath.section == 1 {
-            let memo = self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)
-            cell.titleLabel.text = memo[indexPath.row].title
-            cell.contentLabel.text = memo[indexPath.row].content ?? "추가 텍스트 없음"
             
-            if Calendar.current.isDateInToday(memo[indexPath.row].registerDate) {
+            guard let normalTasks = normalTasks else { return UITableViewCell() }
+            
+            cell.titleLabel.text = normalTasks[indexPath.row].title
+            cell.contentLabel.text = normalTasks[indexPath.row].content ?? "추가 텍스트 없음"
+            
+            if Calendar.current.isDateInToday(normalTasks[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
                 
-            } else if NSCalendar.current.component(.weekOfYear, from: memo[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
+            } else if NSCalendar.current.component(.weekOfYear, from: normalTasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
                 dateFormat.dateFormat = "EEEE"
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
             }
-            cell.dateLabel.text = dateFormat.string(from: memo[indexPath.row].registerDate)
+            cell.dateLabel.text = dateFormat.string(from: normalTasks[indexPath.row].registerDate)
                     
         } else {
             
+            guard let searchTasks = searchTasks else { return UITableViewCell() }
             
-            cell.titleLabel.text = searchTasks?[indexPath.row].title ?? ""
-            cell.contentLabel.text = searchTasks?[indexPath.row].content ?? "추가 텍스트 없음"
+            cell.titleLabel.text = searchTasks[indexPath.row].title
+            cell.contentLabel.text = searchTasks[indexPath.row].content ?? "추가 텍스트 없음"
             
             if let text = cell.titleLabel.text  {
                 
@@ -204,87 +213,88 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
                 cell.contentLabel.attributedText = attributeString
             }
             
-            if Calendar.current.isDateInToday(searchTasks?[indexPath.row].registerDate ?? Date()) {
+            if Calendar.current.isDateInToday(searchTasks[indexPath.row].registerDate) {
                 dateFormat.dateFormat = "a hh:mm"
-            } else if NSCalendar.current.component(.weekOfYear, from: searchTasks?[indexPath.row].registerDate ?? Date()) == NSCalendar.current.component(.weekOfYear, from: Date()) {
+            } else if NSCalendar.current.component(.weekOfYear, from: searchTasks[indexPath.row].registerDate) == NSCalendar.current.component(.weekOfYear, from: Date()) {
                         dateFormat.dateFormat = "EEEE"
                 
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
             }
-            cell.dateLabel.text = dateFormat.string(from: searchTasks?[indexPath.row].registerDate ?? Date())
+            cell.dateLabel.text = dateFormat.string(from: searchTasks[indexPath.row].registerDate)
         }
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
         let vc = WriteViewController()
         
         if indexPath.section == 0 {
-            vc.task = tasks.filter("isCompose = true")[indexPath.row]
+            vc.task = fixedTasks?[indexPath.row]
         } else if indexPath.section == 1 {
-            vc.task = tasks.filter("isCompose = false")[indexPath.row]
+            vc.task = normalTasks?[indexPath.row]
         } else if indexPath.section == 2 {
             navigationItem.backButtonTitle = "검색"
             vc.task = searchTasks?[indexPath.row]
         }
-        
         navigationController?.pushViewController(vc, animated: true)
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        if indexPath.section == 0 {
-            let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-                try! self.localRealm.write {
-                    self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = false
-                }
-                self.mainView.tableView.reloadData()
-            }
-            composeButton.image = UIImage(systemName: "pin.fill")
-            composeButton.backgroundColor = .systemOrange
-            return UISwipeActionsConfiguration(actions: [composeButton])
+        let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
             
-        } else if indexPath.section == 1 {
-            let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-                if self.tasks.filter("isCompose = true").count < 5 {
-                    try! self.localRealm.write {
-                        self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = true
-                    }
+            if indexPath.section == 0 {
+                guard let fixedTasks = self.fixedTasks else { return }
+                
+                self.repository.updateIsCompose(task: fixedTasks[indexPath.row])
+            } else if indexPath.section == 1 {
+                if (self.fixedTasks?.count ?? 0) < 5 {
+                    
+                    guard let normalTasks = self.normalTasks else { return }
+                    
+                    self.repository.updateIsCompose(task: normalTasks[indexPath.row])
+                    
+                    self.updateTasks()
                     self.mainView.tableView.reloadData()
                 } else {
                     self.view.makeToast("최대 5개까지 메모를 고정할 수 있습니다.", duration: 2.0, position: .center, style: ToastStyle())
                 }
-            }
-            composeButton.image = UIImage(systemName: "pin.slash.fill")
-            composeButton.backgroundColor = .systemOrange
-            return UISwipeActionsConfiguration(actions: [composeButton])
-            
-        } else if indexPath.section == 2 {
-            
-            let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
-                if self.searchTasks?[indexPath.row].isCompose == true {
-                    try! self.localRealm.write {
-                        self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = false
-                    }
+            } else {
+                guard let searchTasks = self.searchTasks else { return }
+                
+                if searchTasks[indexPath.row].isCompose == true {
+                    
+                    self.repository.updateIsCompose(task: searchTasks[indexPath.row])
+                    
+                    self.updateTasks()
                     self.mainView.tableView.reloadData()
                 } else {
-                    if self.tasks.filter("isCompose = true").count < 5 {
-                        try! self.localRealm.write {
-                            self.tasks.filter("isCompose = false").sorted(byKeyPath: "registerDate", ascending: true)[indexPath.row].isCompose = true
-                        }
+                    if (self.fixedTasks?.count ?? 0) < 5 {
+                        self.repository.updateIsCompose(task: searchTasks[indexPath.row])
+                        
+                        self.updateTasks()
                         self.mainView.tableView.reloadData()
                     } else {
                         self.view.makeToast("최대 5개까지 메모를 고정할 수 있습니다.", duration: 2.0, position: .center, style: ToastStyle())
                     }
                 }
             }
-            
-            composeButton.image = self.searchTasks?[indexPath.row].isCompose == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
-            composeButton.backgroundColor = .systemOrange
-            return UISwipeActionsConfiguration(actions: [composeButton])
+            self.updateTasks()
+            self.mainView.tableView.reloadData()
         }
-        return UISwipeActionsConfiguration(actions: [])
+        
+        if indexPath.section == 0 {
+            composeButton.image = fixedTasks?[indexPath.row].isCompose == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
+        } else if indexPath.section == 1 {
+            composeButton.image = normalTasks?[indexPath.row].isCompose == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
+        } else {
+            composeButton.image = searchTasks?[indexPath.row].isCompose == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
+        }
+        
+        composeButton.backgroundColor = .systemOrange
+        return UISwipeActionsConfiguration(actions: [composeButton])
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
@@ -294,9 +304,24 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             let alert = UIAlertController(title: "삭제", message: "메모를 정말 삭제하시겠습니까?", preferredStyle: .alert)
             
             let ok = UIAlertAction(title: "확인", style: .destructive) { alert in
-                try! self.localRealm.write {
-                    self.localRealm.delete(self.tasks[indexPath.row])
+                
+                if indexPath.section == 0 {
+                    guard let fixedTasks = self.fixedTasks else { return }
+                    
+                    self.repository.deleteTask(task: fixedTasks[indexPath.row])
+                    
+                } else if indexPath.section == 1 {
+                    guard let normalTasks = self.normalTasks else { return }
+                    
+                    self.repository.deleteTask(task: normalTasks[indexPath.row])
+                    
+                } else {
+                    guard let searchTasks = self.searchTasks else { return }
+                    
+                    self.repository.deleteTask(task: searchTasks[indexPath.row])
                 }
+                
+                self.updateTasks()
                 self.mainView.tableView.reloadData()
             }
             
@@ -337,11 +362,11 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 0 {
-            if searchTasks != nil || self.tasks.filter("isCompose = true").count == 0 {
+            if searchTasks != nil || fixedTasks?.count == 0 {
                 return 0
             }
         } else if section == 1 {
-            if searchTasks != nil || self.tasks.filter("isCompose = false").count == 0 {
+            if searchTasks != nil || normalTasks?.count == 0 {
                 return 0
             }
         } else if section == 2 && searchTasks == nil {
@@ -355,11 +380,10 @@ extension MemoListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         if let text = searchController.searchBar.text, text != "" {
             searchText = text
-            searchTasks = localRealm.objects(Memo.self).filter("title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'").sorted(byKeyPath: "registerDate", ascending: true)
+            searchTasks = repository.fetchFiterSort(text: "title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'", sort: "registerDate")
         } else {
             searchTasks = nil
         }
         mainView.tableView.reloadData()
     }
-
 }

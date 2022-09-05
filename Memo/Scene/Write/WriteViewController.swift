@@ -13,15 +13,13 @@ class WriteViewController: BaseViewController {
     
     let mainView = WriteView()
     
-    let localRealm = try! Realm()
+    let repository = MemoRepository()
     
     var task: Memo?
     
     var titleText = ""
     
     var contentText: String?
-    
-    var isNewMemo = true
     
     var contentArray: [String] = []
     
@@ -39,27 +37,17 @@ class WriteViewController: BaseViewController {
         updateMemo()
         
         if contentArray.count > 0 {
-            if isNewMemo {
-                try! localRealm.write {
-                    let task = Memo(title: titleText, content: contentText, registerDate: Date(), isCompose: false)
-                    localRealm.add(task)
-                }
+            
+            if let task = task {
+                repository.updateTask(task: task, title: titleText, content: contentText)
             } else {
-                try! localRealm.write {
-                    task?.title = titleText
-                    task?.content = contentText
-                    task?.registerDate = Date()
-                }
+                repository.saveTask(title: titleText, content: contentText)
             }
         }
     }
     
     override func configure() {
-        
-        if (task != nil) {
-            isNewMemo.toggle()
-        }
-        
+
         mainView.userTextView.text = (task?.title ?? "") + "\n" + (task?.content ?? "")
         
         mainView.userTextView.becomeFirstResponder()
@@ -95,10 +83,8 @@ class WriteViewController: BaseViewController {
                 }
             }
         } else if contentArray.count == 0 {
-            if !isNewMemo {
-                try! localRealm.write{
-                    localRealm.delete(task!)
-                }
+            if let task = task {
+                repository.deleteTask(task: task)
             }
         } else {
             titleText = contentArray[0]
