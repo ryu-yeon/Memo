@@ -16,7 +16,11 @@ class MemoListViewController: BaseViewController {
     
     let repository = MemoRepository()
     
-    let numberFormat = NumberFormatter()
+    let numberFormat: NumberFormatter = {
+        let format = NumberFormatter()
+        format.numberStyle = .decimal
+        return format
+    }()
     
     let dateFormat = DateFormatter()
     
@@ -52,9 +56,7 @@ class MemoListViewController: BaseViewController {
         mainView.tableView.reloadData()
         navigationController?.navigationBar.prefersLargeTitles = true
         
-        numberFormat.numberStyle = .decimal
-        let memoCount = numberFormat.string(for: (fixedTasks?.count ?? 0) + (normalTasks?.count ?? 0))
-        navigationItem.title = (memoCount ?? "0") + "개의 메모"
+        setTitle()
     }
     
     
@@ -76,6 +78,11 @@ class MemoListViewController: BaseViewController {
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
+    
+    func setTitle() {
+        let memoCount = numberFormat.string(for: (fixedTasks?.count ?? 0) + (normalTasks?.count ?? 0))
+        navigationItem.title = (memoCount ?? "0") + "개의 메모"
     }
     
     func setToolbarButton() {
@@ -321,6 +328,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
                     self.repository.deleteTask(task: searchTasks[indexPath.row])
                 }
                 
+                self.setTitle()
                 self.updateTasks()
                 self.mainView.tableView.reloadData()
             }
