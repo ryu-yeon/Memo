@@ -146,6 +146,8 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
+        
+        dateFormat.locale = Locale(identifier: "ko_KR")
         if indexPath.section == 0 {
             let pintasks = self.tasks.filter("isCompose = true").sorted(byKeyPath: "registerDate", ascending: true)
             
@@ -205,9 +207,6 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             } else if NSCalendar.current.component(.weekOfYear, from: searchTasks?[indexPath.row].registerDate ?? Date()) == NSCalendar.current.component(.weekOfYear, from: Date()) {
                         dateFormat.dateFormat = "EEEE"
                 
-//            } else if Date(timeIntervalSinceNow: -7 * 24 * 60 * 60) <= searchTasks?[indexPath.row].registerDate ?? Date() {
-//
-//                dateFormat.dateFormat = "EEEE"
             } else {
                 dateFormat.dateFormat = "yyyy. MM. dd a hh:mm"
             }
