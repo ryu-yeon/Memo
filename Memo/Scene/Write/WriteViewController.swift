@@ -49,7 +49,6 @@ class WriteViewController: BaseViewController {
     override func configure() {
 
         mainView.userTextView.text = (task?.title ?? "") + "\n" + (task?.content ?? "")
-        
         mainView.userTextView.becomeFirstResponder()
         
         let sharedButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(sharedButtonClicked))
@@ -70,18 +69,14 @@ class WriteViewController: BaseViewController {
     }
     
     func updateMemo() {
-        contentArray = mainView.userTextView.text.split(separator: "\n").map{String($0)}
+        guard let memoText = mainView.userTextView.text else { return }
         
+        contentArray = memoText.split(separator: "\n").map{String($0)}
         
         if contentArray.count > 1 {
             titleText = contentArray[0]
-            contentText = ""
-            for i in 1...contentArray.count - 1 {
-                contentText! += contentArray[i]
-                if i != contentArray.count - 1 {
-                    contentText! += "\n"
-                }
-            }
+            let startIndex = memoText.index(memoText.startIndex, offsetBy: titleText.count + 1)
+            contentText = String(memoText[startIndex...])
         } else if contentArray.count == 0 {
             if let task = task {
                 repository.deleteTask(task: task)
