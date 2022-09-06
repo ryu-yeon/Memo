@@ -76,11 +76,11 @@ class MemoListViewController: BaseViewController {
     
     private func setNavigtaionBar() {
         let appearance = UINavigationBarAppearance()
-        appearance.backgroundColor = .systemGray6
-        appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
-        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.label]
+        appearance.backgroundColor = .viewBackgroundColor
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.textColor]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.textColor]
         
-        navigationController?.navigationBar.tintColor = .systemOrange
+        navigationController?.navigationBar.tintColor = .pointColor
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
@@ -110,7 +110,7 @@ class MemoListViewController: BaseViewController {
             view.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
             let writeButton = UIButton()
             writeButton.frame = CGRect(x: 0, y: -5, width: 30, height: 30)
-            writeButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+            writeButton.setImage(UIImage.writeImage, for: .normal)
             writeButton.contentVerticalAlignment = .fill
             writeButton.contentHorizontalAlignment = .fill
             
@@ -122,7 +122,7 @@ class MemoListViewController: BaseViewController {
             view.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 30)
             let writeButton = UIButton()
             writeButton.frame = CGRect(x: UIScreen.main.bounds.width - 60, y: -5, width: 30, height: 30)
-            writeButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+            writeButton.setImage(UIImage.writeImage, for: .normal)
             writeButton.contentVerticalAlignment = .fill
             writeButton.contentHorizontalAlignment = .fill
             
@@ -135,7 +135,7 @@ class MemoListViewController: BaseViewController {
     private func setSearchController() {
         let searchController = UISearchController(searchResultsController: nil)
         
-        navigationController?.navigationBar.backgroundColor = .systemGray6
+        navigationController?.navigationBar.backgroundColor = .viewBackgroundColor
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = false
         navigationItem.largeTitleDisplayMode = .always
@@ -154,7 +154,7 @@ class MemoListViewController: BaseViewController {
         
         let attributeString = NSMutableAttributedString(string: text)
         
-        attributeString.addAttribute(.foregroundColor, value: UIColor.systemOrange, range: (text as NSString).range(of: searchText))
+        attributeString.addAttribute(.foregroundColor, value: UIColor.pointColor, range: (text as NSString).range(of: searchText))
         
         return attributeString
     }
@@ -252,8 +252,8 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             self.mainView.tableView.reloadData()
         }
         
-        fixButton.image = tasks[indexPath.section]?[indexPath.row].isFixed == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
-        fixButton.backgroundColor = .systemOrange
+        fixButton.image = tasks[indexPath.section]?[indexPath.row].isFixed == true ? .fixedImage : .unfixedImage
+        fixButton.backgroundColor = .pointColor
         return UISwipeActionsConfiguration(actions: [fixButton])
     }
     
@@ -280,8 +280,8 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             self.present(alert, animated: true)
         }
         
-        removeButton.image = UIImage(systemName: "trash.fill")
-        removeButton.backgroundColor = .systemRed
+        removeButton.image = .removeImage
+        removeButton.backgroundColor = .removeColor
         return UISwipeActionsConfiguration(actions: [removeButton])
     }
     
@@ -293,7 +293,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         
         let view = UIView()
         let label = UILabel()
-        label.textColor = .label
+        label.textColor = .textColor
         label.frame = CGRect(x: 0, y: 0, width: 300, height: 30)
         if section == 0 {
             label.text = "고정된 메모"

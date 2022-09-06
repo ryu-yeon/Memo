@@ -13,20 +13,20 @@ class WriteView: BaseView {
     
     let viewContainer: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .backgroundColor
         return view
     }()
     
     let userTextView: UITextView = {
         let view = UITextView()
-        view.textColor = .label
-        view.backgroundColor = .systemBackground
+        view.textColor = .textColor
+        view.backgroundColor = .backgroundColor
         view.font = .systemFont(ofSize: 20)
         return view
     }()
     
     override func configureUI() {
-        self.backgroundColor = .systemBackground
+        self.backgroundColor = .backgroundColor
         [viewContainer, userTextView].forEach {
             self.addSubview($0)
         }

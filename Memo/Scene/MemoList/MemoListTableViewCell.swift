@@ -13,27 +13,27 @@ class MemoListTableViewCell: BaseTableViewCell {
     
     let titleLabel: UILabel = {
         let view = UILabel()
-        view.textColor = .label
+        view.textColor = .textColor
         view.font = .boldSystemFont(ofSize: 24)
         return view
     }()
     
     let dateLabel: UILabel = {
         let view = UILabel()
-        view.textColor = .systemGray
+        view.textColor = .contentTextColor
         view.font = .systemFont(ofSize: 16)
         return view
     }()
     
     let contentLabel: UILabel = {
        let view = UILabel()
-        view.textColor = .systemGray
+        view.textColor = .contentTextColor
         view.font = .systemFont(ofSize: 16)
         return view
     }()
     
     override func configureUI() {
-        self.backgroundColor = .systemGray6
+        self.backgroundColor = .viewBackgroundColor
         [titleLabel, dateLabel, contentLabel].forEach {
             self.addSubview($0)
         }

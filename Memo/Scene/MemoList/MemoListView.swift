@@ -12,19 +12,19 @@ import SnapKit
 class MemoListView: BaseView {
     let tableView: UITableView = {
         let view = UITableView(frame: .zero, style: .insetGrouped)
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .backgroundColor
         return view
     }()
     
     let toolBar: UIToolbar = {
         let view = UIToolbar()
-        view.barTintColor = .systemBackground
-        view.tintColor = .systemOrange
+        view.barTintColor = .backgroundColor
+        view.tintColor = .pointColor
         return view
     }()
     
     override func configureUI() {
-        self.backgroundColor = .systemBackground
+        self.backgroundColor = .backgroundColor
         [tableView, toolBar].forEach {
             self.addSubview($0)
         }

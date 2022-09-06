@@ -13,7 +13,7 @@ class PopUpView: BaseView {
     
     let viewContainer: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemGray5
+        view.backgroundColor = .popupViewContainerBackgroundColor
         return view
     }()
     
@@ -28,7 +28,7 @@ class PopUpView: BaseView {
         """
         view.text = ment
         view.numberOfLines = 5
-        view.textColor = .label
+        view.textColor = .textColor
         view.font = .boldSystemFont(ofSize: 20)
         return view
     }()
@@ -37,12 +37,12 @@ class PopUpView: BaseView {
         let view = UIButton()
         view.setTitleColor(.label, for: .normal)
         view.setAttributedTitle(NSAttributedString(string: "확인", attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 20)]), for: .normal)
-        view.backgroundColor = .systemOrange
+        view.backgroundColor = .backgroundColor
         return view
     }()
     
     override func configureUI() {
-        self.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.4)
+        self.backgroundColor = .popupViewBackgroundColor
         [viewContainer, welcomeLabel, okButton].forEach {
             self.addSubview($0)
         }
