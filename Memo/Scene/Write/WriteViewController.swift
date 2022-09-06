@@ -48,7 +48,11 @@ class WriteViewController: BaseViewController {
     
     override func configure() {
 
-        mainView.userTextView.text = (task?.title ?? "") + "\n" + (task?.content ?? "")
+        if let task = task {
+            mainView.userTextView.text = task.title + "\n" + (task.content ?? "")
+        } else {
+            mainView.userTextView.text = ""
+        }
         mainView.userTextView.becomeFirstResponder()
         
         let sharedButton = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"), style: .plain, target: self, action: #selector(sharedButtonClicked))
