@@ -9,7 +9,7 @@ import UIKit
 
 class PopUpViewController: BaseViewController {
     
-    let mainView = PopUpView()
+    private let mainView = PopUpView()
     
     override func loadView() {
         self.view = mainView

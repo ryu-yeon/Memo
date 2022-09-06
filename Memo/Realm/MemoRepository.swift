@@ -13,7 +13,7 @@ protocol MemoRepositoryType {
     func fetchSort(sort: String) -> Results<Memo>
     func fetchFiter(text: String) -> Results<Memo>
     func fetchFiterSort(text: String, sort: String) -> Results<Memo>
-    func updateIsCompose(task: Memo)
+    func updateIsFixed(task: Memo)
     func deleteTask(task: Memo)
     func saveTask(title: String, content: String?)
     func updateTask(task: Memo?, title: String, content: String?)
@@ -35,10 +35,10 @@ class MemoRepository: MemoRepositoryType {
         return localRealm.objects(Memo.self).filter(text).sorted(byKeyPath: sort, ascending: true)
     }
     
-    func updateIsCompose(task: Memo) {
+    func updateIsFixed(task: Memo) {
         do {
             try localRealm.write {
-                task.isCompose = !task.isCompose
+                task.isFixed = !task.isFixed
             }
         } catch {
             print("실패", #function)
@@ -58,7 +58,7 @@ class MemoRepository: MemoRepositoryType {
     func saveTask(title: String, content: String?) {
         do {
             try localRealm.write {
-                let task = Memo(title: title, content: content, registerDate: Date(), isCompose: false)
+                let task = Memo(title: title, content: content, registerDate: Date(), isFixed: false)
                 localRealm.add(task)
             }
         } catch {

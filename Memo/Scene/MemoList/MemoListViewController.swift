@@ -12,11 +12,11 @@ import Toast
 
 class MemoListViewController: BaseViewController {
     
-    let mainView = MemoListView()
+    private let mainView = MemoListView()
     
-    let repository = MemoRepository()
+    private let repository = MemoRepository()
     
-    let numberFormat: NumberFormatter = {
+    private let numberFormat: NumberFormatter = {
         let format = NumberFormatter()
         format.numberStyle = .decimal
         return format
@@ -28,9 +28,9 @@ class MemoListViewController: BaseViewController {
         return format
     }()
     
-    var tasks: [Results<Memo>?] = [nil, nil, nil]
+    private var tasks: [Results<Memo>?] = [nil, nil, nil]
     
-    var searchText: String?
+    private var searchText: String?
     
     override func loadView() {
         self.view = mainView
@@ -74,7 +74,7 @@ class MemoListViewController: BaseViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    func setNavigtaionBar() {
+    private func setNavigtaionBar() {
         let appearance = UINavigationBarAppearance()
         appearance.backgroundColor = .systemGray6
         appearance.titleTextAttributes = [.foregroundColor: UIColor.label]
@@ -86,12 +86,12 @@ class MemoListViewController: BaseViewController {
         navigationController?.navigationBar.scrollEdgeAppearance = appearance
     }
     
-    func setTitle() {
+    private func setTitle() {
         let memoCount = numberFormat.string(for: (tasks[0]?.count ?? 0) + (tasks[1]?.count ?? 0))
         navigationItem.title = (memoCount ?? "0") + "개의 메모"
     }
     
-    func setDateFormat(date: Date) -> String {
+    private func setDateFormat(date: Date) -> String {
         if Calendar.current.isDateInToday(date) {
             dateFormat.dateFormat = "a hh:mm"
             
@@ -103,7 +103,7 @@ class MemoListViewController: BaseViewController {
         return dateFormat.string(from: date)
     }
     
-    func setToolbarButton() {
+    private func setToolbarButton() {
 
         if #available(iOS 14.0, *) {
             let view = UIView()
@@ -132,7 +132,7 @@ class MemoListViewController: BaseViewController {
         }
     }
     
-    func setSearchController() {
+    private func setSearchController() {
         let searchController = UISearchController(searchResultsController: nil)
         
         navigationController?.navigationBar.backgroundColor = .systemGray6
@@ -145,12 +145,12 @@ class MemoListViewController: BaseViewController {
         searchController.searchBar.setValue("취소", forKey: "cancelButtonText")
     }
     
-    func updateTasks() {
-        tasks[0] = repository.fetchFiterSort(text: "isCompose = true", sort: "registerDate")
-        tasks[1] = repository.fetchFiterSort(text: "isCompose = false", sort: "registerDate")
+    private func updateTasks() {
+        tasks[0] = repository.fetchFiterSort(text: "isFixed = true", sort: "registerDate")
+        tasks[1] = repository.fetchFiterSort(text: "isFixed = false", sort: "registerDate")
     }
     
-    func highlightText(text: String, searchText: String) ->  NSMutableAttributedString {
+    private func highlightText(text: String, searchText: String) ->  NSMutableAttributedString {
         
         let attributeString = NSMutableAttributedString(string: text)
         
@@ -217,31 +217,31 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
-        let composeButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
+        let fixButton = UIContextualAction(style: .normal, title: nil) { action, view, completionHandler in
             
             guard let tasks = self.tasks[indexPath.section] else { return }
             
             if indexPath.section == 0 {
                                 
-                self.repository.updateIsCompose(task: tasks[indexPath.row])
+                self.repository.updateIsFixed(task: tasks[indexPath.row])
             } else if indexPath.section == 1 {
                 if (self.tasks[0]?.count ?? 0) < 5 {
                     
-                    self.repository.updateIsCompose(task: tasks[indexPath.row])
+                    self.repository.updateIsFixed(task: tasks[indexPath.row])
                     self.mainView.tableView.reloadData()
                 } else {
                     self.view.makeToast("최대 5개까지 메모를 고정할 수 있습니다.", duration: 2.0, position: .center, style: ToastStyle())
                 }
             } else {
                 
-                if tasks[indexPath.row].isCompose == true {
+                if tasks[indexPath.row].isFixed == true {
                     
-                    self.repository.updateIsCompose(task: tasks[indexPath.row])
+                    self.repository.updateIsFixed(task: tasks[indexPath.row])
                     
                     self.mainView.tableView.reloadData()
                 } else {
                     if (self.tasks[0]?.count ?? 0) < 5 {
-                        self.repository.updateIsCompose(task: tasks[indexPath.row])
+                        self.repository.updateIsFixed(task: tasks[indexPath.row])
                         
                         self.mainView.tableView.reloadData()
                     } else {
@@ -252,9 +252,9 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             self.mainView.tableView.reloadData()
         }
         
-        composeButton.image = tasks[indexPath.section]?[indexPath.row].isCompose == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
-        composeButton.backgroundColor = .systemOrange
-        return UISwipeActionsConfiguration(actions: [composeButton])
+        fixButton.image = tasks[indexPath.section]?[indexPath.row].isFixed == true ? UIImage(systemName: "pin.fill") : UIImage(systemName: "pin.slash.fill")
+        fixButton.backgroundColor = .systemOrange
+        return UISwipeActionsConfiguration(actions: [fixButton])
     }
     
     func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {

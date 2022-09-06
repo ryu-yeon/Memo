@@ -11,17 +11,17 @@ import RealmSwift
 
 class WriteViewController: BaseViewController {
     
-    let mainView = WriteView()
+    private let mainView = WriteView()
     
-    let repository = MemoRepository()
+    private let repository = MemoRepository()
     
     var task: Memo?
     
-    var titleText = ""
+    private var titleText = ""
     
-    var contentText: String?
+    private var contentText: String?
     
-    var contentArray: [String] = []
+    private var contentArray: [String] = []
     
     override func loadView() {
         self.view = mainView
@@ -72,7 +72,7 @@ class WriteViewController: BaseViewController {
         present(vc, animated: true)
     }
     
-    func updateMemo() {
+    private func updateMemo() {
         guard let memoText = mainView.userTextView.text else { return }
         
         contentArray = memoText.split(separator: "\n").map{String($0)}
