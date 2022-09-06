@@ -10,6 +10,12 @@ import UIKit
 import RealmSwift
 import Toast
 
+enum Tasks: Int {
+    case fixed = 0
+    case normal = 1
+    case search = 2
+}
+
 class MemoListViewController: BaseViewController {
     
     private let mainView = MemoListView()
@@ -87,7 +93,7 @@ class MemoListViewController: BaseViewController {
     }
     
     private func setTitle() {
-        let memoCount = numberFormat.string(for: (tasks[0]?.count ?? 0) + (tasks[1]?.count ?? 0))
+        let memoCount = numberFormat.string(for: (tasks[Tasks.fixed.rawValue]?.count ?? 0) + (tasks[Tasks.normal.rawValue]?.count ?? 0))
         navigationItem.title = (memoCount ?? "0") + "개의 메모"
     }
     
@@ -146,8 +152,8 @@ class MemoListViewController: BaseViewController {
     }
     
     private func updateTasks() {
-        tasks[0] = repository.fetchFiterSort(text: "isFixed = true", sort: "registerDate")
-        tasks[1] = repository.fetchFiterSort(text: "isFixed = false", sort: "registerDate")
+        tasks[Tasks.fixed.rawValue] = repository.fetchFiterSort(text: "isFixed = true", sort: "registerDate")
+        tasks[Tasks.normal.rawValue] = repository.fetchFiterSort(text: "isFixed = false", sort: "registerDate")
     }
     
     private func highlightText(text: String, searchText: String) ->  NSMutableAttributedString {
@@ -168,9 +174,9 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        if section == 2 {
+        if section == Tasks.search.rawValue {
             return tasks[section]?.count ?? 0
-        } else if tasks[2] == nil {
+        } else if tasks[Tasks.search.rawValue] == nil {
             return tasks[section]?.count ?? 0
         } else {
             return 0
@@ -180,14 +186,14 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: MemoListTableViewCell.reusableIdentifier, for: indexPath) as? MemoListTableViewCell else { return UITableViewCell() }
 
-        if indexPath.section != 2 {
+        if indexPath.section != Tasks.search.rawValue {
             guard let tasks = tasks[indexPath.section] else { return UITableViewCell() }
             
             cell.titleLabel.text = tasks[indexPath.row].title
             cell.contentLabel.text = tasks[indexPath.row].content ?? "추가 텍스트 없음"
             cell.dateLabel.text = setDateFormat(date: tasks[indexPath.row].registerDate)
         } else {
-            guard let tasks = tasks[2] else { return UITableViewCell() }
+            guard let tasks = tasks[Tasks.search.rawValue] else { return UITableViewCell() }
             
             cell.titleLabel.attributedText = highlightText(text: tasks[indexPath.row].title, searchText: searchText ?? "")
 
@@ -207,7 +213,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         
         guard let tasks = tasks[indexPath.section] else { return }
         
-        if indexPath.section == 2 {
+        if indexPath.section == Tasks.search.rawValue {
             navigationItem.backButtonTitle = "검색"
         }
         vc.task = tasks[indexPath.row]
@@ -221,11 +227,11 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
             
             guard let tasks = self.tasks[indexPath.section] else { return }
             
-            if indexPath.section == 0 {
+            if indexPath.section == Tasks.fixed.rawValue {
                                 
                 self.repository.updateIsFixed(task: tasks[indexPath.row])
-            } else if indexPath.section == 1 {
-                if (self.tasks[0]?.count ?? 0) < 5 {
+            } else if indexPath.section == Tasks.normal.rawValue {
+                if (self.tasks[Tasks.fixed.rawValue]?.count ?? 0) < 5 {
                     
                     self.repository.updateIsFixed(task: tasks[indexPath.row])
                     self.mainView.tableView.reloadData()
@@ -240,7 +246,7 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
                     
                     self.mainView.tableView.reloadData()
                 } else {
-                    if (self.tasks[0]?.count ?? 0) < 5 {
+                    if (self.tasks[Tasks.fixed.rawValue]?.count ?? 0) < 5 {
                         self.repository.updateIsFixed(task: tasks[indexPath.row])
                         
                         self.mainView.tableView.reloadData()
@@ -295,12 +301,12 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
         let label = UILabel()
         label.textColor = .textColor
         label.frame = CGRect(x: 0, y: 0, width: 300, height: 30)
-        if section == 0 {
+        if section == Tasks.fixed.rawValue {
             label.text = "고정된 메모"
-        } else if section == 1{
+        } else if section == Tasks.normal.rawValue{
             label.text = "메모"
         } else {
-            label.text = "\(tasks[2]?.count ?? 0)개 찾음"
+            label.text = "\(tasks[Tasks.search.rawValue]?.count ?? 0)개 찾음"
         }
         label.font = .boldSystemFont(ofSize: 28)
         view.addSubview(label)
@@ -309,11 +315,11 @@ extension MemoListViewController: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         
-        if section != 2 {
-            if tasks[2] != nil || tasks[section]?.count == 0 {
+        if section != Tasks.search.rawValue {
+            if tasks[Tasks.search.rawValue] != nil || tasks[section]?.count == 0 {
                 return 0
             }
-        } else if tasks[2] == nil {
+        } else if tasks[Tasks.search.rawValue] == nil {
             return 0
         }
         return 40
@@ -324,9 +330,9 @@ extension MemoListViewController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         if let text = searchController.searchBar.text, text != "" {
             searchText = text
-            tasks[2] = repository.fetchFiterSort(text: "title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'", sort: "registerDate")
+            tasks[Tasks.search.rawValue] = repository.fetchFiterSort(text: "title CONTAINS[c] '\(text)' || content CONTAINS[c] '\(text)'", sort: "registerDate")
         } else {
-            tasks[2] = nil
+            tasks[Tasks.search.rawValue] = nil
         }
         mainView.tableView.reloadData()
     }
